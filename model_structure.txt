@@ -1,0 +1,1056 @@
+====================================================================================================
+DIFFUSION MODEL (MMDiT)
+====================================================================================================
+===========================================================================================================================================================
+Layer (type (var_name))                                 Input Shape               Output Shape              Param #                   Trainable
+===========================================================================================================================================================
+MMDiTModel (MMDiTModel)                                 --                        [1, 64, 64]               --                        True
+├─Linear (img_in)                                       [1, 64, 64]               [1, 64, 768]              49,920                    True
+├─MLPEmbedder (time_in)                                 [1, 256]                  [1, 768]                  --                        True
+│    └─Linear (in_layer)                                [1, 256]                  [1, 768]                  197,376                   True
+│    └─SiLU (silu)                                      [1, 768]                  [1, 768]                  --                        --
+│    └─Linear (out_layer)                               [1, 768]                  [1, 768]                  590,592                   True
+├─MLPEmbedder (vector_in)                               [1, 512]                  [1, 768]                  --                        True
+│    └─Linear (in_layer)                                [1, 512]                  [1, 768]                  393,984                   True
+│    └─SiLU (silu)                                      [1, 768]                  [1, 768]                  --                        --
+│    └─Linear (out_layer)                               [1, 768]                  [1, 768]                  590,592                   True
+├─Linear (txt_in)                                       [1, 128, 512]             [1, 128, 768]             393,984                   True
+├─EmbedND (pe_embedder)                                 [1, 192, 3]               [1, 1, 192, 32, 2, 2]     --                        --
+├─ModuleList (double_blocks)                            --                        --                        --                        True
+│    └─DoubleStreamBlock (0)                            [1, 64, 768]              [1, 64, 768]              --                        True
+│    │    └─Modulation (img_mod)                        [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 4608]                 3,543,552                 True
+│    │    └─Modulation (txt_mod)                        [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 4608]                 3,543,552                 True
+│    │    └─LayerNorm (img_norm1)                       [1, 64, 768]              [1, 64, 768]              --                        --
+│    │    └─SelfAttention (img_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (q_proj)                        [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    │    └─Linear (k_proj)                        [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    │    └─Linear (v_proj)                        [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    │    └─QKNorm (norm)                          [1, 64, 12, 64]           [1, 64, 12, 64]           --                        True
+│    │    │    │    └─FusedRMSNorm (query_norm)         [1, 64, 12, 64]           [1, 64, 12, 64]           64                        True
+│    │    │    │    └─FusedRMSNorm (key_norm)           [1, 64, 12, 64]           [1, 64, 12, 64]           64                        True
+│    │    └─LayerNorm (txt_norm1)                       [1, 128, 768]             [1, 128, 768]             --                        --
+│    │    └─SelfAttention (txt_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (q_proj)                        [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    │    └─Linear (k_proj)                        [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    │    └─Linear (v_proj)                        [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    │    └─QKNorm (norm)                          [1, 128, 12, 64]          [1, 128, 12, 64]          --                        True
+│    │    │    │    └─FusedRMSNorm (query_norm)         [1, 128, 12, 64]          [1, 128, 12, 64]          64                        True
+│    │    │    │    └─FusedRMSNorm (key_norm)           [1, 128, 12, 64]          [1, 128, 12, 64]          64                        True
+│    │    └─SelfAttention (img_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (proj)                          [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    └─LayerNorm (img_norm2)                       [1, 64, 768]              [1, 64, 768]              --                        --
+│    │    └─Sequential (img_mlp)                        [1, 64, 768]              [1, 64, 768]              --                        True
+│    │    │    └─Linear (0)                             [1, 64, 768]              [1, 64, 3072]             2,362,368                 True
+│    │    │    └─GELU (1)                               [1, 64, 3072]             [1, 64, 3072]             --                        --
+│    │    │    └─Linear (2)                             [1, 64, 3072]             [1, 64, 768]              2,360,064                 True
+│    │    └─SelfAttention (txt_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (proj)                          [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    └─LayerNorm (txt_norm2)                       [1, 128, 768]             [1, 128, 768]             --                        --
+│    │    └─Sequential (txt_mlp)                        [1, 128, 768]             [1, 128, 768]             --                        True
+│    │    │    └─Linear (0)                             [1, 128, 768]             [1, 128, 3072]            2,362,368                 True
+│    │    │    └─GELU (1)                               [1, 128, 3072]            [1, 128, 3072]            --                        --
+│    │    │    └─Linear (2)                             [1, 128, 3072]            [1, 128, 768]             2,360,064                 True
+│    └─DoubleStreamBlock (1)                            [1, 64, 768]              [1, 64, 768]              --                        True
+│    │    └─Modulation (img_mod)                        [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 4608]                 3,543,552                 True
+│    │    └─Modulation (txt_mod)                        [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 4608]                 3,543,552                 True
+│    │    └─LayerNorm (img_norm1)                       [1, 64, 768]              [1, 64, 768]              --                        --
+│    │    └─SelfAttention (img_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (q_proj)                        [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    │    └─Linear (k_proj)                        [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    │    └─Linear (v_proj)                        [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    │    └─QKNorm (norm)                          [1, 64, 12, 64]           [1, 64, 12, 64]           --                        True
+│    │    │    │    └─FusedRMSNorm (query_norm)         [1, 64, 12, 64]           [1, 64, 12, 64]           64                        True
+│    │    │    │    └─FusedRMSNorm (key_norm)           [1, 64, 12, 64]           [1, 64, 12, 64]           64                        True
+│    │    └─LayerNorm (txt_norm1)                       [1, 128, 768]             [1, 128, 768]             --                        --
+│    │    └─SelfAttention (txt_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (q_proj)                        [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    │    └─Linear (k_proj)                        [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    │    └─Linear (v_proj)                        [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    │    └─QKNorm (norm)                          [1, 128, 12, 64]          [1, 128, 12, 64]          --                        True
+│    │    │    │    └─FusedRMSNorm (query_norm)         [1, 128, 12, 64]          [1, 128, 12, 64]          64                        True
+│    │    │    │    └─FusedRMSNorm (key_norm)           [1, 128, 12, 64]          [1, 128, 12, 64]          64                        True
+│    │    └─SelfAttention (img_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (proj)                          [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    └─LayerNorm (img_norm2)                       [1, 64, 768]              [1, 64, 768]              --                        --
+│    │    └─Sequential (img_mlp)                        [1, 64, 768]              [1, 64, 768]              --                        True
+│    │    │    └─Linear (0)                             [1, 64, 768]              [1, 64, 3072]             2,362,368                 True
+│    │    │    └─GELU (1)                               [1, 64, 3072]             [1, 64, 3072]             --                        --
+│    │    │    └─Linear (2)                             [1, 64, 3072]             [1, 64, 768]              2,360,064                 True
+│    │    └─SelfAttention (txt_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (proj)                          [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    └─LayerNorm (txt_norm2)                       [1, 128, 768]             [1, 128, 768]             --                        --
+│    │    └─Sequential (txt_mlp)                        [1, 128, 768]             [1, 128, 768]             --                        True
+│    │    │    └─Linear (0)                             [1, 128, 768]             [1, 128, 3072]            2,362,368                 True
+│    │    │    └─GELU (1)                               [1, 128, 3072]            [1, 128, 3072]            --                        --
+│    │    │    └─Linear (2)                             [1, 128, 3072]            [1, 128, 768]             2,360,064                 True
+│    └─DoubleStreamBlock (2)                            [1, 64, 768]              [1, 64, 768]              --                        True
+│    │    └─Modulation (img_mod)                        [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 4608]                 3,543,552                 True
+│    │    └─Modulation (txt_mod)                        [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 4608]                 3,543,552                 True
+│    │    └─LayerNorm (img_norm1)                       [1, 64, 768]              [1, 64, 768]              --                        --
+│    │    └─SelfAttention (img_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (q_proj)                        [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    │    └─Linear (k_proj)                        [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    │    └─Linear (v_proj)                        [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    │    └─QKNorm (norm)                          [1, 64, 12, 64]           [1, 64, 12, 64]           --                        True
+│    │    │    │    └─FusedRMSNorm (query_norm)         [1, 64, 12, 64]           [1, 64, 12, 64]           64                        True
+│    │    │    │    └─FusedRMSNorm (key_norm)           [1, 64, 12, 64]           [1, 64, 12, 64]           64                        True
+│    │    └─LayerNorm (txt_norm1)                       [1, 128, 768]             [1, 128, 768]             --                        --
+│    │    └─SelfAttention (txt_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (q_proj)                        [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    │    └─Linear (k_proj)                        [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    │    └─Linear (v_proj)                        [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    │    └─QKNorm (norm)                          [1, 128, 12, 64]          [1, 128, 12, 64]          --                        True
+│    │    │    │    └─FusedRMSNorm (query_norm)         [1, 128, 12, 64]          [1, 128, 12, 64]          64                        True
+│    │    │    │    └─FusedRMSNorm (key_norm)           [1, 128, 12, 64]          [1, 128, 12, 64]          64                        True
+│    │    └─SelfAttention (img_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (proj)                          [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    └─LayerNorm (img_norm2)                       [1, 64, 768]              [1, 64, 768]              --                        --
+│    │    └─Sequential (img_mlp)                        [1, 64, 768]              [1, 64, 768]              --                        True
+│    │    │    └─Linear (0)                             [1, 64, 768]              [1, 64, 3072]             2,362,368                 True
+│    │    │    └─GELU (1)                               [1, 64, 3072]             [1, 64, 3072]             --                        --
+│    │    │    └─Linear (2)                             [1, 64, 3072]             [1, 64, 768]              2,360,064                 True
+│    │    └─SelfAttention (txt_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (proj)                          [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    └─LayerNorm (txt_norm2)                       [1, 128, 768]             [1, 128, 768]             --                        --
+│    │    └─Sequential (txt_mlp)                        [1, 128, 768]             [1, 128, 768]             --                        True
+│    │    │    └─Linear (0)                             [1, 128, 768]             [1, 128, 3072]            2,362,368                 True
+│    │    │    └─GELU (1)                               [1, 128, 3072]            [1, 128, 3072]            --                        --
+│    │    │    └─Linear (2)                             [1, 128, 3072]            [1, 128, 768]             2,360,064                 True
+│    └─DoubleStreamBlock (3)                            [1, 64, 768]              [1, 64, 768]              --                        True
+│    │    └─Modulation (img_mod)                        [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 4608]                 3,543,552                 True
+│    │    └─Modulation (txt_mod)                        [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 4608]                 3,543,552                 True
+│    │    └─LayerNorm (img_norm1)                       [1, 64, 768]              [1, 64, 768]              --                        --
+│    │    └─SelfAttention (img_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (q_proj)                        [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    │    └─Linear (k_proj)                        [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    │    └─Linear (v_proj)                        [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    │    └─QKNorm (norm)                          [1, 64, 12, 64]           [1, 64, 12, 64]           --                        True
+│    │    │    │    └─FusedRMSNorm (query_norm)         [1, 64, 12, 64]           [1, 64, 12, 64]           64                        True
+│    │    │    │    └─FusedRMSNorm (key_norm)           [1, 64, 12, 64]           [1, 64, 12, 64]           64                        True
+│    │    └─LayerNorm (txt_norm1)                       [1, 128, 768]             [1, 128, 768]             --                        --
+│    │    └─SelfAttention (txt_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (q_proj)                        [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    │    └─Linear (k_proj)                        [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    │    └─Linear (v_proj)                        [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    │    └─QKNorm (norm)                          [1, 128, 12, 64]          [1, 128, 12, 64]          --                        True
+│    │    │    │    └─FusedRMSNorm (query_norm)         [1, 128, 12, 64]          [1, 128, 12, 64]          64                        True
+│    │    │    │    └─FusedRMSNorm (key_norm)           [1, 128, 12, 64]          [1, 128, 12, 64]          64                        True
+│    │    └─SelfAttention (img_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (proj)                          [1, 64, 768]              [1, 64, 768]              590,592                   True
+│    │    └─LayerNorm (img_norm2)                       [1, 64, 768]              [1, 64, 768]              --                        --
+│    │    └─Sequential (img_mlp)                        [1, 64, 768]              [1, 64, 768]              --                        True
+│    │    │    └─Linear (0)                             [1, 64, 768]              [1, 64, 3072]             2,362,368                 True
+│    │    │    └─GELU (1)                               [1, 64, 3072]             [1, 64, 3072]             --                        --
+│    │    │    └─Linear (2)                             [1, 64, 3072]             [1, 64, 768]              2,360,064                 True
+│    │    └─SelfAttention (txt_attn)                    --                        --                        (recursive)               True
+│    │    │    └─Linear (proj)                          [1, 128, 768]             [1, 128, 768]             590,592                   True
+│    │    └─LayerNorm (txt_norm2)                       [1, 128, 768]             [1, 128, 768]             --                        --
+│    │    └─Sequential (txt_mlp)                        [1, 128, 768]             [1, 128, 768]             --                        True
+│    │    │    └─Linear (0)                             [1, 128, 768]             [1, 128, 3072]            2,362,368                 True
+│    │    │    └─GELU (1)                               [1, 128, 3072]            [1, 128, 3072]            --                        --
+│    │    │    └─Linear (2)                             [1, 128, 3072]            [1, 128, 768]             2,360,064                 True
+├─ModuleList (single_blocks)                            --                        --                        --                        True
+│    └─SingleStreamBlock (0)                            [1, 192, 768]             [1, 192, 768]             --                        True
+│    │    └─Modulation (modulation)                     [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 2304]                 1,771,776                 True
+│    │    └─LayerNorm (pre_norm)                        [1, 192, 768]             [1, 192, 768]             --                        --
+│    │    └─Linear (q_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (k_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (v_mlp)                              [1, 192, 768]             [1, 192, 3840]            2,952,960                 True
+│    │    └─QKNorm (norm)                               [1, 192, 12, 64]          [1, 192, 12, 64]          --                        True
+│    │    │    └─FusedRMSNorm (query_norm)              [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    │    └─FusedRMSNorm (key_norm)                [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    └─GELU (mlp_act)                              [1, 192, 3072]            [1, 192, 3072]            --                        --
+│    │    └─Linear (linear2)                            [1, 192, 3840]            [1, 192, 768]             2,949,888                 True
+│    └─SingleStreamBlock (1)                            [1, 192, 768]             [1, 192, 768]             --                        True
+│    │    └─Modulation (modulation)                     [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 2304]                 1,771,776                 True
+│    │    └─LayerNorm (pre_norm)                        [1, 192, 768]             [1, 192, 768]             --                        --
+│    │    └─Linear (q_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (k_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (v_mlp)                              [1, 192, 768]             [1, 192, 3840]            2,952,960                 True
+│    │    └─QKNorm (norm)                               [1, 192, 12, 64]          [1, 192, 12, 64]          --                        True
+│    │    │    └─FusedRMSNorm (query_norm)              [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    │    └─FusedRMSNorm (key_norm)                [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    └─GELU (mlp_act)                              [1, 192, 3072]            [1, 192, 3072]            --                        --
+│    │    └─Linear (linear2)                            [1, 192, 3840]            [1, 192, 768]             2,949,888                 True
+│    └─SingleStreamBlock (2)                            [1, 192, 768]             [1, 192, 768]             --                        True
+│    │    └─Modulation (modulation)                     [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 2304]                 1,771,776                 True
+│    │    └─LayerNorm (pre_norm)                        [1, 192, 768]             [1, 192, 768]             --                        --
+│    │    └─Linear (q_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (k_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (v_mlp)                              [1, 192, 768]             [1, 192, 3840]            2,952,960                 True
+│    │    └─QKNorm (norm)                               [1, 192, 12, 64]          [1, 192, 12, 64]          --                        True
+│    │    │    └─FusedRMSNorm (query_norm)              [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    │    └─FusedRMSNorm (key_norm)                [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    └─GELU (mlp_act)                              [1, 192, 3072]            [1, 192, 3072]            --                        --
+│    │    └─Linear (linear2)                            [1, 192, 3840]            [1, 192, 768]             2,949,888                 True
+│    └─SingleStreamBlock (3)                            [1, 192, 768]             [1, 192, 768]             --                        True
+│    │    └─Modulation (modulation)                     [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 2304]                 1,771,776                 True
+│    │    └─LayerNorm (pre_norm)                        [1, 192, 768]             [1, 192, 768]             --                        --
+│    │    └─Linear (q_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (k_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (v_mlp)                              [1, 192, 768]             [1, 192, 3840]            2,952,960                 True
+│    │    └─QKNorm (norm)                               [1, 192, 12, 64]          [1, 192, 12, 64]          --                        True
+│    │    │    └─FusedRMSNorm (query_norm)              [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    │    └─FusedRMSNorm (key_norm)                [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    └─GELU (mlp_act)                              [1, 192, 3072]            [1, 192, 3072]            --                        --
+│    │    └─Linear (linear2)                            [1, 192, 3840]            [1, 192, 768]             2,949,888                 True
+│    └─SingleStreamBlock (4)                            [1, 192, 768]             [1, 192, 768]             --                        True
+│    │    └─Modulation (modulation)                     [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 2304]                 1,771,776                 True
+│    │    └─LayerNorm (pre_norm)                        [1, 192, 768]             [1, 192, 768]             --                        --
+│    │    └─Linear (q_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (k_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (v_mlp)                              [1, 192, 768]             [1, 192, 3840]            2,952,960                 True
+│    │    └─QKNorm (norm)                               [1, 192, 12, 64]          [1, 192, 12, 64]          --                        True
+│    │    │    └─FusedRMSNorm (query_norm)              [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    │    └─FusedRMSNorm (key_norm)                [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    └─GELU (mlp_act)                              [1, 192, 3072]            [1, 192, 3072]            --                        --
+│    │    └─Linear (linear2)                            [1, 192, 3840]            [1, 192, 768]             2,949,888                 True
+│    └─SingleStreamBlock (5)                            [1, 192, 768]             [1, 192, 768]             --                        True
+│    │    └─Modulation (modulation)                     [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 2304]                 1,771,776                 True
+│    │    └─LayerNorm (pre_norm)                        [1, 192, 768]             [1, 192, 768]             --                        --
+│    │    └─Linear (q_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (k_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (v_mlp)                              [1, 192, 768]             [1, 192, 3840]            2,952,960                 True
+│    │    └─QKNorm (norm)                               [1, 192, 12, 64]          [1, 192, 12, 64]          --                        True
+│    │    │    └─FusedRMSNorm (query_norm)              [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    │    └─FusedRMSNorm (key_norm)                [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    └─GELU (mlp_act)                              [1, 192, 3072]            [1, 192, 3072]            --                        --
+│    │    └─Linear (linear2)                            [1, 192, 3840]            [1, 192, 768]             2,949,888                 True
+│    └─SingleStreamBlock (6)                            [1, 192, 768]             [1, 192, 768]             --                        True
+│    │    └─Modulation (modulation)                     [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 2304]                 1,771,776                 True
+│    │    └─LayerNorm (pre_norm)                        [1, 192, 768]             [1, 192, 768]             --                        --
+│    │    └─Linear (q_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (k_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (v_mlp)                              [1, 192, 768]             [1, 192, 3840]            2,952,960                 True
+│    │    └─QKNorm (norm)                               [1, 192, 12, 64]          [1, 192, 12, 64]          --                        True
+│    │    │    └─FusedRMSNorm (query_norm)              [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    │    └─FusedRMSNorm (key_norm)                [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    └─GELU (mlp_act)                              [1, 192, 3072]            [1, 192, 3072]            --                        --
+│    │    └─Linear (linear2)                            [1, 192, 3840]            [1, 192, 768]             2,949,888                 True
+│    └─SingleStreamBlock (7)                            [1, 192, 768]             [1, 192, 768]             --                        True
+│    │    └─Modulation (modulation)                     [1, 768]                  --                        --                        True
+│    │    │    └─Linear (lin)                           [1, 768]                  [1, 2304]                 1,771,776                 True
+│    │    └─LayerNorm (pre_norm)                        [1, 192, 768]             [1, 192, 768]             --                        --
+│    │    └─Linear (q_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (k_proj)                             [1, 192, 768]             [1, 192, 768]             590,592                   True
+│    │    └─Linear (v_mlp)                              [1, 192, 768]             [1, 192, 3840]            2,952,960                 True
+│    │    └─QKNorm (norm)                               [1, 192, 12, 64]          [1, 192, 12, 64]          --                        True
+│    │    │    └─FusedRMSNorm (query_norm)              [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    │    └─FusedRMSNorm (key_norm)                [1, 192, 12, 64]          [1, 192, 12, 64]          64                        True
+│    │    └─GELU (mlp_act)                              [1, 192, 3072]            [1, 192, 3072]            --                        --
+│    │    └─Linear (linear2)                            [1, 192, 3840]            [1, 192, 768]             2,949,888                 True
+├─LastLayer (final_layer)                               [1, 64, 768]              [1, 64, 64]               --                        True
+│    └─Sequential (adaLN_modulation)                    [1, 768]                  [1, 1536]                 --                        True
+│    │    └─SiLU (0)                                    [1, 768]                  [1, 768]                  --                        --
+│    │    └─Linear (1)                                  [1, 768]                  [1, 1536]                 1,181,184                 True
+│    └─LayerNorm (norm_final)                           [1, 64, 768]              [1, 64, 768]              --                        --
+│    └─Linear (linear)                                  [1, 64, 768]              [1, 64, 64]               49,216                    True
+===========================================================================================================================================================
+Total params: 159,322,176
+Trainable params: 159,322,176
+Non-trainable params: 0
+Total mult-adds (M): 159.32
+===========================================================================================================================================================
+Input size (MB): 0.14
+Forward/backward pass size (MB): 73.98
+Params size (MB): 318.64
+Estimated Total Size (MB): 392.77
+===========================================================================================================================================================
+
+====================================================================================================
+VAE MODEL (AutoencoderKL - Encoder Only)
+====================================================================================================
+AutoencoderKLCausal3D(
+  (encoder): EncoderCausal3D(
+    (conv_in): CausalConv3d(
+      (conv): ChannelChunkConv3d(3, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+    )
+    (down_blocks): ModuleList(
+      (0): DownEncoderBlockCausal3D(
+        (resnets): ModuleList(
+          (0-1): 2 x ResnetBlockCausal3D(
+            (norm1): GroupNorm(32, 128, eps=1e-06, affine=True)
+            (conv1): CausalConv3d(
+              (conv): ChannelChunkConv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+            )
+            (norm2): GroupNorm(32, 128, eps=1e-06, affine=True)
+            (dropout): Dropout(p=0.0, inplace=False)
+            (conv2): CausalConv3d(
+              (conv): ChannelChunkConv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+            )
+            (nonlinearity): SiLU()
+          )
+        )
+        (downsamplers): ModuleList(
+          (0): DownsampleCausal3D(
+            (conv): CausalConv3d(
+              (conv): ChannelChunkConv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 2, 2))
+            )
+          )
+        )
+      )
+      (1): DownEncoderBlockCausal3D(
+        (resnets): ModuleList(
+          (0): ResnetBlockCausal3D(
+            (norm1): GroupNorm(32, 128, eps=1e-06, affine=True)
+            (conv1): CausalConv3d(
+              (conv): ChannelChunkConv3d(128, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+            )
+            (norm2): GroupNorm(32, 256, eps=1e-06, affine=True)
+            (dropout): Dropout(p=0.0, inplace=False)
+            (conv2): CausalConv3d(
+              (conv): ChannelChunkConv3d(256, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+            )
+            (nonlinearity): SiLU()
+            (conv_shortcut): CausalConv3d(
+              (conv): ChannelChunkConv3d(128, 256, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+            )
+          )
+          (1): ResnetBlockCausal3D(
+            (norm1): GroupNorm(32, 256, eps=1e-06, affine=True)
+            (conv1): CausalConv3d(
+              (conv): ChannelChunkConv3d(256, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+            )
+            (norm2): GroupNorm(32, 256, eps=1e-06, affine=True)
+            (dropout): Dropout(p=0.0, inplace=False)
+            (conv2): CausalConv3d(
+              (conv): ChannelChunkConv3d(256, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+            )
+            (nonlinearity): SiLU()
+          )
+        )
+        (downsamplers): ModuleList(
+          (0): DownsampleCausal3D(
+            (conv): CausalConv3d(
+              (conv): ChannelChunkConv3d(256, 256, kernel_size=(3, 3, 3), stride=(2, 2, 2))
+            )
+          )
+        )
+      )
+      (2): DownEncoderBlockCausal3D(
+        (resnets): ModuleList(
+          (0): ResnetBlockCausal3D(
+            (norm1): GroupNorm(32, 256, eps=1e-06, affine=True)
+            (conv1): CausalConv3d(
+              (conv): ChannelChunkConv3d(256, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+            )
+            (norm2): GroupNorm(32, 512, eps=1e-06, affine=True)
+            (dropout): Dropout(p=0.0, inplace=False)
+            (conv2): CausalConv3d(
+              (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+            )
+            (nonlinearity): SiLU()
+            (conv_shortcut): CausalConv3d(
+              (conv): ChannelChunkConv3d(256, 512, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+            )
+          )
+          (1): ResnetBlockCausal3D(
+            (norm1): GroupNorm(32, 512, eps=1e-06, affine=True)
+            (conv1): CausalConv3d(
+              (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+            )
+            (norm2): GroupNorm(32, 512, eps=1e-06, affine=True)
+            (dropout): Dropout(p=0.0, inplace=False)
+            (conv2): CausalConv3d(
+              (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+            )
+            (nonlinearity): SiLU()
+          )
+        )
+        (downsamplers): ModuleList(
+          (0): DownsampleCausal3D(
+            (conv): CausalConv3d(
+              (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(2, 2, 2))
+            )
+          )
+        )
+      )
+      (3): DownEncoderBlockCausal3D(
+        (resnets): ModuleList(
+          (0-1): 2 x ResnetBlockCausal3D(
+            (norm1): GroupNorm(32, 512, eps=1e-06, affine=True)
+            (conv1): CausalConv3d(
+              (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+            )
+            (norm2): GroupNorm(32, 512, eps=1e-06, affine=True)
+            (dropout): Dropout(p=0.0, inplace=False)
+            (conv2): CausalConv3d(
+              (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+            )
+            (nonlinearity): SiLU()
+          )
+        )
+      )
+    )
+    (mid_block): UNetMidBlockCausal3D(
+      (attentions): ModuleList(
+        (0): Attention(
+          (group_norm): GroupNorm(32, 512, eps=1e-06, affine=True)
+          (to_q): Linear(in_features=512, out_features=512, bias=True)
+          (to_k): Linear(in_features=512, out_features=512, bias=True)
+          (to_v): Linear(in_features=512, out_features=512, bias=True)
+          (to_out): ModuleList(
+            (0): Linear(in_features=512, out_features=512, bias=True)
+            (1): Dropout(p=0.0, inplace=False)
+          )
+        )
+      )
+      (resnets): ModuleList(
+        (0-1): 2 x ResnetBlockCausal3D(
+          (norm1): GroupNorm(32, 512, eps=1e-06, affine=True)
+          (conv1): CausalConv3d(
+            (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+          )
+          (norm2): GroupNorm(32, 512, eps=1e-06, affine=True)
+          (dropout): Dropout(p=0.0, inplace=False)
+          (conv2): CausalConv3d(
+            (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+          )
+          (nonlinearity): SiLU()
+        )
+      )
+    )
+    (conv_norm_out): GroupNorm(32, 512, eps=1e-06, affine=True)
+    (conv_act): SiLU()
+    (conv_out): CausalConv3d(
+      (conv): ChannelChunkConv3d(512, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+    )
+  )
+  (quant_conv): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+  (post_quant_conv): Conv3d(16, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+  (encode): OptimizedModule(
+    (_orig_mod): EncoderCausal3D(
+      (conv_in): CausalConv3d(
+        (conv): ChannelChunkConv3d(3, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+      )
+      (down_blocks): ModuleList(
+        (0): DownEncoderBlockCausal3D(
+          (resnets): ModuleList(
+            (0-1): 2 x ResnetBlockCausal3D(
+              (norm1): GroupNorm(32, 128, eps=1e-06, affine=True)
+              (conv1): CausalConv3d(
+                (conv): ChannelChunkConv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+              )
+              (norm2): GroupNorm(32, 128, eps=1e-06, affine=True)
+              (dropout): Dropout(p=0.0, inplace=False)
+              (conv2): CausalConv3d(
+                (conv): ChannelChunkConv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+              )
+              (nonlinearity): SiLU()
+            )
+          )
+          (downsamplers): ModuleList(
+            (0): DownsampleCausal3D(
+              (conv): CausalConv3d(
+                (conv): ChannelChunkConv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 2, 2))
+              )
+            )
+          )
+        )
+        (1): DownEncoderBlockCausal3D(
+          (resnets): ModuleList(
+            (0): ResnetBlockCausal3D(
+              (norm1): GroupNorm(32, 128, eps=1e-06, affine=True)
+              (conv1): CausalConv3d(
+                (conv): ChannelChunkConv3d(128, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+              )
+              (norm2): GroupNorm(32, 256, eps=1e-06, affine=True)
+              (dropout): Dropout(p=0.0, inplace=False)
+              (conv2): CausalConv3d(
+                (conv): ChannelChunkConv3d(256, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+              )
+              (nonlinearity): SiLU()
+              (conv_shortcut): CausalConv3d(
+                (conv): ChannelChunkConv3d(128, 256, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+              )
+            )
+            (1): ResnetBlockCausal3D(
+              (norm1): GroupNorm(32, 256, eps=1e-06, affine=True)
+              (conv1): CausalConv3d(
+                (conv): ChannelChunkConv3d(256, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+              )
+              (norm2): GroupNorm(32, 256, eps=1e-06, affine=True)
+              (dropout): Dropout(p=0.0, inplace=False)
+              (conv2): CausalConv3d(
+                (conv): ChannelChunkConv3d(256, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+              )
+              (nonlinearity): SiLU()
+            )
+          )
+          (downsamplers): ModuleList(
+            (0): DownsampleCausal3D(
+              (conv): CausalConv3d(
+                (conv): ChannelChunkConv3d(256, 256, kernel_size=(3, 3, 3), stride=(2, 2, 2))
+              )
+            )
+          )
+        )
+        (2): DownEncoderBlockCausal3D(
+          (resnets): ModuleList(
+            (0): ResnetBlockCausal3D(
+              (norm1): GroupNorm(32, 256, eps=1e-06, affine=True)
+              (conv1): CausalConv3d(
+                (conv): ChannelChunkConv3d(256, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+              )
+              (norm2): GroupNorm(32, 512, eps=1e-06, affine=True)
+              (dropout): Dropout(p=0.0, inplace=False)
+              (conv2): CausalConv3d(
+                (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+              )
+              (nonlinearity): SiLU()
+              (conv_shortcut): CausalConv3d(
+                (conv): ChannelChunkConv3d(256, 512, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+              )
+            )
+            (1): ResnetBlockCausal3D(
+              (norm1): GroupNorm(32, 512, eps=1e-06, affine=True)
+              (conv1): CausalConv3d(
+                (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+              )
+              (norm2): GroupNorm(32, 512, eps=1e-06, affine=True)
+              (dropout): Dropout(p=0.0, inplace=False)
+              (conv2): CausalConv3d(
+                (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+              )
+              (nonlinearity): SiLU()
+            )
+          )
+          (downsamplers): ModuleList(
+            (0): DownsampleCausal3D(
+              (conv): CausalConv3d(
+                (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(2, 2, 2))
+              )
+            )
+          )
+        )
+        (3): DownEncoderBlockCausal3D(
+          (resnets): ModuleList(
+            (0-1): 2 x ResnetBlockCausal3D(
+              (norm1): GroupNorm(32, 512, eps=1e-06, affine=True)
+              (conv1): CausalConv3d(
+                (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+              )
+              (norm2): GroupNorm(32, 512, eps=1e-06, affine=True)
+              (dropout): Dropout(p=0.0, inplace=False)
+              (conv2): CausalConv3d(
+                (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+              )
+              (nonlinearity): SiLU()
+            )
+          )
+        )
+      )
+      (mid_block): UNetMidBlockCausal3D(
+        (attentions): ModuleList(
+          (0): Attention(
+            (group_norm): GroupNorm(32, 512, eps=1e-06, affine=True)
+            (to_q): Linear(in_features=512, out_features=512, bias=True)
+            (to_k): Linear(in_features=512, out_features=512, bias=True)
+            (to_v): Linear(in_features=512, out_features=512, bias=True)
+            (to_out): ModuleList(
+              (0): Linear(in_features=512, out_features=512, bias=True)
+              (1): Dropout(p=0.0, inplace=False)
+            )
+          )
+        )
+        (resnets): ModuleList(
+          (0-1): 2 x ResnetBlockCausal3D(
+            (norm1): GroupNorm(32, 512, eps=1e-06, affine=True)
+            (conv1): CausalConv3d(
+              (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+            )
+            (norm2): GroupNorm(32, 512, eps=1e-06, affine=True)
+            (dropout): Dropout(p=0.0, inplace=False)
+            (conv2): CausalConv3d(
+              (conv): ChannelChunkConv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+            )
+            (nonlinearity): SiLU()
+          )
+        )
+      )
+      (conv_norm_out): GroupNorm(32, 512, eps=1e-06, affine=True)
+      (conv_act): SiLU()
+      (conv_out): CausalConv3d(
+        (conv): ChannelChunkConv3d(512, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1))
+      )
+    )
+  )
+)
+
+Total Parameters: 100,342,736 (100.34 M)
+
+VAE Encoder Layer Details:
+  encoder.conv_in.conv.weight: shape=[128, 3, 3, 3, 3], numel=10,368
+  encoder.conv_in.conv.bias: shape=[128], numel=128
+  encoder.down_blocks.0.resnets.0.norm1.weight: shape=[128], numel=128
+  encoder.down_blocks.0.resnets.0.norm1.bias: shape=[128], numel=128
+  encoder.down_blocks.0.resnets.0.conv1.conv.weight: shape=[128, 128, 3, 3, 3], numel=442,368
+  encoder.down_blocks.0.resnets.0.conv1.conv.bias: shape=[128], numel=128
+  encoder.down_blocks.0.resnets.0.norm2.weight: shape=[128], numel=128
+  encoder.down_blocks.0.resnets.0.norm2.bias: shape=[128], numel=128
+  encoder.down_blocks.0.resnets.0.conv2.conv.weight: shape=[128, 128, 3, 3, 3], numel=442,368
+  encoder.down_blocks.0.resnets.0.conv2.conv.bias: shape=[128], numel=128
+  encoder.down_blocks.0.resnets.1.norm1.weight: shape=[128], numel=128
+  encoder.down_blocks.0.resnets.1.norm1.bias: shape=[128], numel=128
+  encoder.down_blocks.0.resnets.1.conv1.conv.weight: shape=[128, 128, 3, 3, 3], numel=442,368
+  encoder.down_blocks.0.resnets.1.conv1.conv.bias: shape=[128], numel=128
+  encoder.down_blocks.0.resnets.1.norm2.weight: shape=[128], numel=128
+  encoder.down_blocks.0.resnets.1.norm2.bias: shape=[128], numel=128
+  encoder.down_blocks.0.resnets.1.conv2.conv.weight: shape=[128, 128, 3, 3, 3], numel=442,368
+  encoder.down_blocks.0.resnets.1.conv2.conv.bias: shape=[128], numel=128
+  encoder.down_blocks.0.downsamplers.0.conv.conv.weight: shape=[128, 128, 3, 3, 3], numel=442,368
+  encoder.down_blocks.0.downsamplers.0.conv.conv.bias: shape=[128], numel=128
+  encoder.down_blocks.1.resnets.0.norm1.weight: shape=[128], numel=128
+  encoder.down_blocks.1.resnets.0.norm1.bias: shape=[128], numel=128
+  encoder.down_blocks.1.resnets.0.conv1.conv.weight: shape=[256, 128, 3, 3, 3], numel=884,736
+  encoder.down_blocks.1.resnets.0.conv1.conv.bias: shape=[256], numel=256
+  encoder.down_blocks.1.resnets.0.norm2.weight: shape=[256], numel=256
+  encoder.down_blocks.1.resnets.0.norm2.bias: shape=[256], numel=256
+  encoder.down_blocks.1.resnets.0.conv2.conv.weight: shape=[256, 256, 3, 3, 3], numel=1,769,472
+  encoder.down_blocks.1.resnets.0.conv2.conv.bias: shape=[256], numel=256
+  encoder.down_blocks.1.resnets.0.conv_shortcut.conv.weight: shape=[256, 128, 1, 1, 1], numel=32,768
+  encoder.down_blocks.1.resnets.0.conv_shortcut.conv.bias: shape=[256], numel=256
+  encoder.down_blocks.1.resnets.1.norm1.weight: shape=[256], numel=256
+  encoder.down_blocks.1.resnets.1.norm1.bias: shape=[256], numel=256
+  encoder.down_blocks.1.resnets.1.conv1.conv.weight: shape=[256, 256, 3, 3, 3], numel=1,769,472
+  encoder.down_blocks.1.resnets.1.conv1.conv.bias: shape=[256], numel=256
+  encoder.down_blocks.1.resnets.1.norm2.weight: shape=[256], numel=256
+  encoder.down_blocks.1.resnets.1.norm2.bias: shape=[256], numel=256
+  encoder.down_blocks.1.resnets.1.conv2.conv.weight: shape=[256, 256, 3, 3, 3], numel=1,769,472
+  encoder.down_blocks.1.resnets.1.conv2.conv.bias: shape=[256], numel=256
+  encoder.down_blocks.1.downsamplers.0.conv.conv.weight: shape=[256, 256, 3, 3, 3], numel=1,769,472
+  encoder.down_blocks.1.downsamplers.0.conv.conv.bias: shape=[256], numel=256
+  encoder.down_blocks.2.resnets.0.norm1.weight: shape=[256], numel=256
+  encoder.down_blocks.2.resnets.0.norm1.bias: shape=[256], numel=256
+  encoder.down_blocks.2.resnets.0.conv1.conv.weight: shape=[512, 256, 3, 3, 3], numel=3,538,944
+  encoder.down_blocks.2.resnets.0.conv1.conv.bias: shape=[512], numel=512
+  encoder.down_blocks.2.resnets.0.norm2.weight: shape=[512], numel=512
+  encoder.down_blocks.2.resnets.0.norm2.bias: shape=[512], numel=512
+  encoder.down_blocks.2.resnets.0.conv2.conv.weight: shape=[512, 512, 3, 3, 3], numel=7,077,888
+  encoder.down_blocks.2.resnets.0.conv2.conv.bias: shape=[512], numel=512
+  encoder.down_blocks.2.resnets.0.conv_shortcut.conv.weight: shape=[512, 256, 1, 1, 1], numel=131,072
+  encoder.down_blocks.2.resnets.0.conv_shortcut.conv.bias: shape=[512], numel=512
+  encoder.down_blocks.2.resnets.1.norm1.weight: shape=[512], numel=512
+  encoder.down_blocks.2.resnets.1.norm1.bias: shape=[512], numel=512
+  encoder.down_blocks.2.resnets.1.conv1.conv.weight: shape=[512, 512, 3, 3, 3], numel=7,077,888
+  encoder.down_blocks.2.resnets.1.conv1.conv.bias: shape=[512], numel=512
+  encoder.down_blocks.2.resnets.1.norm2.weight: shape=[512], numel=512
+  encoder.down_blocks.2.resnets.1.norm2.bias: shape=[512], numel=512
+  encoder.down_blocks.2.resnets.1.conv2.conv.weight: shape=[512, 512, 3, 3, 3], numel=7,077,888
+  encoder.down_blocks.2.resnets.1.conv2.conv.bias: shape=[512], numel=512
+  encoder.down_blocks.2.downsamplers.0.conv.conv.weight: shape=[512, 512, 3, 3, 3], numel=7,077,888
+  encoder.down_blocks.2.downsamplers.0.conv.conv.bias: shape=[512], numel=512
+  encoder.down_blocks.3.resnets.0.norm1.weight: shape=[512], numel=512
+  encoder.down_blocks.3.resnets.0.norm1.bias: shape=[512], numel=512
+  encoder.down_blocks.3.resnets.0.conv1.conv.weight: shape=[512, 512, 3, 3, 3], numel=7,077,888
+  encoder.down_blocks.3.resnets.0.conv1.conv.bias: shape=[512], numel=512
+  encoder.down_blocks.3.resnets.0.norm2.weight: shape=[512], numel=512
+  encoder.down_blocks.3.resnets.0.norm2.bias: shape=[512], numel=512
+  encoder.down_blocks.3.resnets.0.conv2.conv.weight: shape=[512, 512, 3, 3, 3], numel=7,077,888
+  encoder.down_blocks.3.resnets.0.conv2.conv.bias: shape=[512], numel=512
+  encoder.down_blocks.3.resnets.1.norm1.weight: shape=[512], numel=512
+  encoder.down_blocks.3.resnets.1.norm1.bias: shape=[512], numel=512
+  encoder.down_blocks.3.resnets.1.conv1.conv.weight: shape=[512, 512, 3, 3, 3], numel=7,077,888
+  encoder.down_blocks.3.resnets.1.conv1.conv.bias: shape=[512], numel=512
+  encoder.down_blocks.3.resnets.1.norm2.weight: shape=[512], numel=512
+  encoder.down_blocks.3.resnets.1.norm2.bias: shape=[512], numel=512
+  encoder.down_blocks.3.resnets.1.conv2.conv.weight: shape=[512, 512, 3, 3, 3], numel=7,077,888
+  encoder.down_blocks.3.resnets.1.conv2.conv.bias: shape=[512], numel=512
+  encoder.mid_block.attentions.0.group_norm.weight: shape=[512], numel=512
+  encoder.mid_block.attentions.0.group_norm.bias: shape=[512], numel=512
+  encoder.mid_block.attentions.0.to_q.weight: shape=[512, 512], numel=262,144
+  encoder.mid_block.attentions.0.to_q.bias: shape=[512], numel=512
+  encoder.mid_block.attentions.0.to_k.weight: shape=[512, 512], numel=262,144
+  encoder.mid_block.attentions.0.to_k.bias: shape=[512], numel=512
+  encoder.mid_block.attentions.0.to_v.weight: shape=[512, 512], numel=262,144
+  encoder.mid_block.attentions.0.to_v.bias: shape=[512], numel=512
+  encoder.mid_block.attentions.0.to_out.0.weight: shape=[512, 512], numel=262,144
+  encoder.mid_block.attentions.0.to_out.0.bias: shape=[512], numel=512
+  encoder.mid_block.resnets.0.norm1.weight: shape=[512], numel=512
+  encoder.mid_block.resnets.0.norm1.bias: shape=[512], numel=512
+  encoder.mid_block.resnets.0.conv1.conv.weight: shape=[512, 512, 3, 3, 3], numel=7,077,888
+  encoder.mid_block.resnets.0.conv1.conv.bias: shape=[512], numel=512
+  encoder.mid_block.resnets.0.norm2.weight: shape=[512], numel=512
+  encoder.mid_block.resnets.0.norm2.bias: shape=[512], numel=512
+  encoder.mid_block.resnets.0.conv2.conv.weight: shape=[512, 512, 3, 3, 3], numel=7,077,888
+  encoder.mid_block.resnets.0.conv2.conv.bias: shape=[512], numel=512
+  encoder.mid_block.resnets.1.norm1.weight: shape=[512], numel=512
+  encoder.mid_block.resnets.1.norm1.bias: shape=[512], numel=512
+  encoder.mid_block.resnets.1.conv1.conv.weight: shape=[512, 512, 3, 3, 3], numel=7,077,888
+  encoder.mid_block.resnets.1.conv1.conv.bias: shape=[512], numel=512
+  encoder.mid_block.resnets.1.norm2.weight: shape=[512], numel=512
+  encoder.mid_block.resnets.1.norm2.bias: shape=[512], numel=512
+  encoder.mid_block.resnets.1.conv2.conv.weight: shape=[512, 512, 3, 3, 3], numel=7,077,888
+  encoder.mid_block.resnets.1.conv2.conv.bias: shape=[512], numel=512
+  encoder.conv_norm_out.weight: shape=[512], numel=512
+  encoder.conv_norm_out.bias: shape=[512], numel=512
+  encoder.conv_out.conv.weight: shape=[32, 512, 3, 3, 3], numel=442,368
+  encoder.conv_out.conv.bias: shape=[32], numel=32
+  quant_conv.weight: shape=[32, 32, 1, 1, 1], numel=1,024
+  quant_conv.bias: shape=[32], numel=32
+  post_quant_conv.weight: shape=[16, 16, 1, 1, 1], numel=256
+  post_quant_conv.bias: shape=[16], numel=16
+
+====================================================================================================
+T5 TEXT ENCODER
+====================================================================================================
+HFEmbedder(
+  (hf_module): T5EncoderModel(
+    (shared): Embedding(32128, 512)
+    (encoder): T5Stack(
+      (embed_tokens): Embedding(32128, 512)
+      (block): ModuleList(
+        (0): T5Block(
+          (layer): ModuleList(
+            (0): T5LayerSelfAttention(
+              (SelfAttention): T5Attention(
+                (q): Linear(in_features=512, out_features=384, bias=False)
+                (k): Linear(in_features=512, out_features=384, bias=False)
+                (v): Linear(in_features=512, out_features=384, bias=False)
+                (o): Linear(in_features=384, out_features=512, bias=False)
+                (relative_attention_bias): Embedding(32, 6)
+              )
+              (layer_norm): T5LayerNorm()
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+            (1): T5LayerFF(
+              (DenseReluDense): T5DenseGatedActDense(
+                (wi_0): Linear(in_features=512, out_features=1024, bias=False)
+                (wi_1): Linear(in_features=512, out_features=1024, bias=False)
+                (wo): Linear(in_features=1024, out_features=512, bias=False)
+                (dropout): Dropout(p=0.1, inplace=False)
+                (act): NewGELUActivation()
+              )
+              (layer_norm): T5LayerNorm()
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+        )
+        (1-7): 7 x T5Block(
+          (layer): ModuleList(
+            (0): T5LayerSelfAttention(
+              (SelfAttention): T5Attention(
+                (q): Linear(in_features=512, out_features=384, bias=False)
+                (k): Linear(in_features=512, out_features=384, bias=False)
+                (v): Linear(in_features=512, out_features=384, bias=False)
+                (o): Linear(in_features=384, out_features=512, bias=False)
+              )
+              (layer_norm): T5LayerNorm()
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+            (1): T5LayerFF(
+              (DenseReluDense): T5DenseGatedActDense(
+                (wi_0): Linear(in_features=512, out_features=1024, bias=False)
+                (wi_1): Linear(in_features=512, out_features=1024, bias=False)
+                (wo): Linear(in_features=1024, out_features=512, bias=False)
+                (dropout): Dropout(p=0.1, inplace=False)
+                (act): NewGELUActivation()
+              )
+              (layer_norm): T5LayerNorm()
+              (dropout): Dropout(p=0.1, inplace=False)
+            )
+          )
+        )
+      )
+      (final_layer_norm): T5LayerNorm()
+      (dropout): Dropout(p=0.1, inplace=False)
+    )
+  )
+)
+
+Total Parameters: 35,332,800 (35.33 M)
+
+====================================================================================================
+CLIP TEXT ENCODER
+====================================================================================================
+HFEmbedder(
+  (hf_module): CLIPTextModel(
+    (text_model): CLIPTextTransformer(
+      (embeddings): CLIPTextEmbeddings(
+        (token_embedding): Embedding(49408, 512)
+        (position_embedding): Embedding(77, 512)
+      )
+      (encoder): CLIPEncoder(
+        (layers): ModuleList(
+          (0-11): 12 x CLIPEncoderLayer(
+            (self_attn): CLIPSdpaAttention(
+              (k_proj): Linear(in_features=512, out_features=512, bias=True)
+              (v_proj): Linear(in_features=512, out_features=512, bias=True)
+              (q_proj): Linear(in_features=512, out_features=512, bias=True)
+              (out_proj): Linear(in_features=512, out_features=512, bias=True)
+            )
+            (layer_norm1): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+            (mlp): CLIPMLP(
+              (activation_fn): QuickGELUActivation()
+              (fc1): Linear(in_features=512, out_features=2048, bias=True)
+              (fc2): Linear(in_features=2048, out_features=512, bias=True)
+            )
+            (layer_norm2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+          )
+        )
+      )
+      (final_layer_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+    )
+  )
+)
+
+Total Parameters: 63,165,952 (63.17 M)
+
+====================================================================================================
+LAYER-WISE PARAMETER DETAILS (Diffusion Model)
+====================================================================================================
+img_in.weight: shape=[768, 64], numel=49,152, trainable=True
+img_in.bias: shape=[768], numel=768, trainable=True
+time_in.in_layer.weight: shape=[768, 256], numel=196,608, trainable=True
+time_in.in_layer.bias: shape=[768], numel=768, trainable=True
+time_in.out_layer.weight: shape=[768, 768], numel=589,824, trainable=True
+time_in.out_layer.bias: shape=[768], numel=768, trainable=True
+vector_in.in_layer.weight: shape=[768, 512], numel=393,216, trainable=True
+vector_in.in_layer.bias: shape=[768], numel=768, trainable=True
+vector_in.out_layer.weight: shape=[768, 768], numel=589,824, trainable=True
+vector_in.out_layer.bias: shape=[768], numel=768, trainable=True
+txt_in.weight: shape=[768, 512], numel=393,216, trainable=True
+txt_in.bias: shape=[768], numel=768, trainable=True
+double_blocks.0.img_mod.lin.weight: shape=[4608, 768], numel=3,538,944, trainable=True
+double_blocks.0.img_mod.lin.bias: shape=[4608], numel=4,608, trainable=True
+double_blocks.0.img_attn.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.0.img_attn.q_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.0.img_attn.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.0.img_attn.k_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.0.img_attn.v_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.0.img_attn.v_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.0.img_attn.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.0.img_attn.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.0.img_attn.proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.0.img_attn.proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.0.img_mlp.0.weight: shape=[3072, 768], numel=2,359,296, trainable=True
+double_blocks.0.img_mlp.0.bias: shape=[3072], numel=3,072, trainable=True
+double_blocks.0.img_mlp.2.weight: shape=[768, 3072], numel=2,359,296, trainable=True
+double_blocks.0.img_mlp.2.bias: shape=[768], numel=768, trainable=True
+double_blocks.0.txt_mod.lin.weight: shape=[4608, 768], numel=3,538,944, trainable=True
+double_blocks.0.txt_mod.lin.bias: shape=[4608], numel=4,608, trainable=True
+double_blocks.0.txt_attn.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.0.txt_attn.q_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.0.txt_attn.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.0.txt_attn.k_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.0.txt_attn.v_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.0.txt_attn.v_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.0.txt_attn.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.0.txt_attn.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.0.txt_attn.proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.0.txt_attn.proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.0.txt_mlp.0.weight: shape=[3072, 768], numel=2,359,296, trainable=True
+double_blocks.0.txt_mlp.0.bias: shape=[3072], numel=3,072, trainable=True
+double_blocks.0.txt_mlp.2.weight: shape=[768, 3072], numel=2,359,296, trainable=True
+double_blocks.0.txt_mlp.2.bias: shape=[768], numel=768, trainable=True
+double_blocks.1.img_mod.lin.weight: shape=[4608, 768], numel=3,538,944, trainable=True
+double_blocks.1.img_mod.lin.bias: shape=[4608], numel=4,608, trainable=True
+double_blocks.1.img_attn.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.1.img_attn.q_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.1.img_attn.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.1.img_attn.k_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.1.img_attn.v_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.1.img_attn.v_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.1.img_attn.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.1.img_attn.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.1.img_attn.proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.1.img_attn.proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.1.img_mlp.0.weight: shape=[3072, 768], numel=2,359,296, trainable=True
+double_blocks.1.img_mlp.0.bias: shape=[3072], numel=3,072, trainable=True
+double_blocks.1.img_mlp.2.weight: shape=[768, 3072], numel=2,359,296, trainable=True
+double_blocks.1.img_mlp.2.bias: shape=[768], numel=768, trainable=True
+double_blocks.1.txt_mod.lin.weight: shape=[4608, 768], numel=3,538,944, trainable=True
+double_blocks.1.txt_mod.lin.bias: shape=[4608], numel=4,608, trainable=True
+double_blocks.1.txt_attn.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.1.txt_attn.q_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.1.txt_attn.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.1.txt_attn.k_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.1.txt_attn.v_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.1.txt_attn.v_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.1.txt_attn.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.1.txt_attn.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.1.txt_attn.proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.1.txt_attn.proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.1.txt_mlp.0.weight: shape=[3072, 768], numel=2,359,296, trainable=True
+double_blocks.1.txt_mlp.0.bias: shape=[3072], numel=3,072, trainable=True
+double_blocks.1.txt_mlp.2.weight: shape=[768, 3072], numel=2,359,296, trainable=True
+double_blocks.1.txt_mlp.2.bias: shape=[768], numel=768, trainable=True
+double_blocks.2.img_mod.lin.weight: shape=[4608, 768], numel=3,538,944, trainable=True
+double_blocks.2.img_mod.lin.bias: shape=[4608], numel=4,608, trainable=True
+double_blocks.2.img_attn.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.2.img_attn.q_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.2.img_attn.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.2.img_attn.k_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.2.img_attn.v_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.2.img_attn.v_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.2.img_attn.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.2.img_attn.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.2.img_attn.proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.2.img_attn.proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.2.img_mlp.0.weight: shape=[3072, 768], numel=2,359,296, trainable=True
+double_blocks.2.img_mlp.0.bias: shape=[3072], numel=3,072, trainable=True
+double_blocks.2.img_mlp.2.weight: shape=[768, 3072], numel=2,359,296, trainable=True
+double_blocks.2.img_mlp.2.bias: shape=[768], numel=768, trainable=True
+double_blocks.2.txt_mod.lin.weight: shape=[4608, 768], numel=3,538,944, trainable=True
+double_blocks.2.txt_mod.lin.bias: shape=[4608], numel=4,608, trainable=True
+double_blocks.2.txt_attn.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.2.txt_attn.q_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.2.txt_attn.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.2.txt_attn.k_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.2.txt_attn.v_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.2.txt_attn.v_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.2.txt_attn.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.2.txt_attn.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.2.txt_attn.proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.2.txt_attn.proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.2.txt_mlp.0.weight: shape=[3072, 768], numel=2,359,296, trainable=True
+double_blocks.2.txt_mlp.0.bias: shape=[3072], numel=3,072, trainable=True
+double_blocks.2.txt_mlp.2.weight: shape=[768, 3072], numel=2,359,296, trainable=True
+double_blocks.2.txt_mlp.2.bias: shape=[768], numel=768, trainable=True
+double_blocks.3.img_mod.lin.weight: shape=[4608, 768], numel=3,538,944, trainable=True
+double_blocks.3.img_mod.lin.bias: shape=[4608], numel=4,608, trainable=True
+double_blocks.3.img_attn.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.3.img_attn.q_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.3.img_attn.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.3.img_attn.k_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.3.img_attn.v_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.3.img_attn.v_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.3.img_attn.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.3.img_attn.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.3.img_attn.proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.3.img_attn.proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.3.img_mlp.0.weight: shape=[3072, 768], numel=2,359,296, trainable=True
+double_blocks.3.img_mlp.0.bias: shape=[3072], numel=3,072, trainable=True
+double_blocks.3.img_mlp.2.weight: shape=[768, 3072], numel=2,359,296, trainable=True
+double_blocks.3.img_mlp.2.bias: shape=[768], numel=768, trainable=True
+double_blocks.3.txt_mod.lin.weight: shape=[4608, 768], numel=3,538,944, trainable=True
+double_blocks.3.txt_mod.lin.bias: shape=[4608], numel=4,608, trainable=True
+double_blocks.3.txt_attn.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.3.txt_attn.q_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.3.txt_attn.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.3.txt_attn.k_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.3.txt_attn.v_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.3.txt_attn.v_proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.3.txt_attn.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.3.txt_attn.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+double_blocks.3.txt_attn.proj.weight: shape=[768, 768], numel=589,824, trainable=True
+double_blocks.3.txt_attn.proj.bias: shape=[768], numel=768, trainable=True
+double_blocks.3.txt_mlp.0.weight: shape=[3072, 768], numel=2,359,296, trainable=True
+double_blocks.3.txt_mlp.0.bias: shape=[3072], numel=3,072, trainable=True
+double_blocks.3.txt_mlp.2.weight: shape=[768, 3072], numel=2,359,296, trainable=True
+double_blocks.3.txt_mlp.2.bias: shape=[768], numel=768, trainable=True
+single_blocks.0.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.0.q_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.0.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.0.k_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.0.v_mlp.weight: shape=[3840, 768], numel=2,949,120, trainable=True
+single_blocks.0.v_mlp.bias: shape=[3840], numel=3,840, trainable=True
+single_blocks.0.linear2.weight: shape=[768, 3840], numel=2,949,120, trainable=True
+single_blocks.0.linear2.bias: shape=[768], numel=768, trainable=True
+single_blocks.0.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.0.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.0.modulation.lin.weight: shape=[2304, 768], numel=1,769,472, trainable=True
+single_blocks.0.modulation.lin.bias: shape=[2304], numel=2,304, trainable=True
+single_blocks.1.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.1.q_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.1.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.1.k_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.1.v_mlp.weight: shape=[3840, 768], numel=2,949,120, trainable=True
+single_blocks.1.v_mlp.bias: shape=[3840], numel=3,840, trainable=True
+single_blocks.1.linear2.weight: shape=[768, 3840], numel=2,949,120, trainable=True
+single_blocks.1.linear2.bias: shape=[768], numel=768, trainable=True
+single_blocks.1.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.1.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.1.modulation.lin.weight: shape=[2304, 768], numel=1,769,472, trainable=True
+single_blocks.1.modulation.lin.bias: shape=[2304], numel=2,304, trainable=True
+single_blocks.2.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.2.q_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.2.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.2.k_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.2.v_mlp.weight: shape=[3840, 768], numel=2,949,120, trainable=True
+single_blocks.2.v_mlp.bias: shape=[3840], numel=3,840, trainable=True
+single_blocks.2.linear2.weight: shape=[768, 3840], numel=2,949,120, trainable=True
+single_blocks.2.linear2.bias: shape=[768], numel=768, trainable=True
+single_blocks.2.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.2.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.2.modulation.lin.weight: shape=[2304, 768], numel=1,769,472, trainable=True
+single_blocks.2.modulation.lin.bias: shape=[2304], numel=2,304, trainable=True
+single_blocks.3.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.3.q_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.3.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.3.k_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.3.v_mlp.weight: shape=[3840, 768], numel=2,949,120, trainable=True
+single_blocks.3.v_mlp.bias: shape=[3840], numel=3,840, trainable=True
+single_blocks.3.linear2.weight: shape=[768, 3840], numel=2,949,120, trainable=True
+single_blocks.3.linear2.bias: shape=[768], numel=768, trainable=True
+single_blocks.3.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.3.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.3.modulation.lin.weight: shape=[2304, 768], numel=1,769,472, trainable=True
+single_blocks.3.modulation.lin.bias: shape=[2304], numel=2,304, trainable=True
+single_blocks.4.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.4.q_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.4.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.4.k_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.4.v_mlp.weight: shape=[3840, 768], numel=2,949,120, trainable=True
+single_blocks.4.v_mlp.bias: shape=[3840], numel=3,840, trainable=True
+single_blocks.4.linear2.weight: shape=[768, 3840], numel=2,949,120, trainable=True
+single_blocks.4.linear2.bias: shape=[768], numel=768, trainable=True
+single_blocks.4.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.4.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.4.modulation.lin.weight: shape=[2304, 768], numel=1,769,472, trainable=True
+single_blocks.4.modulation.lin.bias: shape=[2304], numel=2,304, trainable=True
+single_blocks.5.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.5.q_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.5.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.5.k_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.5.v_mlp.weight: shape=[3840, 768], numel=2,949,120, trainable=True
+single_blocks.5.v_mlp.bias: shape=[3840], numel=3,840, trainable=True
+single_blocks.5.linear2.weight: shape=[768, 3840], numel=2,949,120, trainable=True
+single_blocks.5.linear2.bias: shape=[768], numel=768, trainable=True
+single_blocks.5.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.5.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.5.modulation.lin.weight: shape=[2304, 768], numel=1,769,472, trainable=True
+single_blocks.5.modulation.lin.bias: shape=[2304], numel=2,304, trainable=True
+single_blocks.6.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.6.q_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.6.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.6.k_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.6.v_mlp.weight: shape=[3840, 768], numel=2,949,120, trainable=True
+single_blocks.6.v_mlp.bias: shape=[3840], numel=3,840, trainable=True
+single_blocks.6.linear2.weight: shape=[768, 3840], numel=2,949,120, trainable=True
+single_blocks.6.linear2.bias: shape=[768], numel=768, trainable=True
+single_blocks.6.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.6.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.6.modulation.lin.weight: shape=[2304, 768], numel=1,769,472, trainable=True
+single_blocks.6.modulation.lin.bias: shape=[2304], numel=2,304, trainable=True
+single_blocks.7.q_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.7.q_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.7.k_proj.weight: shape=[768, 768], numel=589,824, trainable=True
+single_blocks.7.k_proj.bias: shape=[768], numel=768, trainable=True
+single_blocks.7.v_mlp.weight: shape=[3840, 768], numel=2,949,120, trainable=True
+single_blocks.7.v_mlp.bias: shape=[3840], numel=3,840, trainable=True
+single_blocks.7.linear2.weight: shape=[768, 3840], numel=2,949,120, trainable=True
+single_blocks.7.linear2.bias: shape=[768], numel=768, trainable=True
+single_blocks.7.norm.query_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.7.norm.key_norm.scale: shape=[64], numel=64, trainable=True
+single_blocks.7.modulation.lin.weight: shape=[2304, 768], numel=1,769,472, trainable=True
+single_blocks.7.modulation.lin.bias: shape=[2304], numel=2,304, trainable=True
+final_layer.linear.weight: shape=[64, 768], numel=49,152, trainable=True
+final_layer.linear.bias: shape=[64], numel=64, trainable=True
+final_layer.adaLN_modulation.1.weight: shape=[1536, 768], numel=1,179,648, trainable=True
+final_layer.adaLN_modulation.1.bias: shape=[1536], numel=1,536, trainable=True

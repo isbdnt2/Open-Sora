@@ -235,6 +235,101 @@ def main():
         log_cuda_memory("clip")
         log_model_params(model_clip)
 
+    # == 使用 torchinfo 打印模型结构 ==
+
+    from torchinfo import summary
+    
+    output_dir = cfg.get("outputs", "outputs")
+    os.makedirs(output_dir, exist_ok=True)
+    model_info_path = os.path.join(output_dir, "model_structure.txt")
+    
+    logger.info(f"Saving model structure to {model_info_path}...")
+    
+    # 创建示例输入数据
+    batch_size = 1
+    seq_len_img = 64
+    seq_len_txt = 128
+    in_channels = cfg.model.get("in_channels", 64)
+    context_in_dim = cfg.model.get("context_in_dim", 512)
+    vec_in_dim = cfg.model.get("vec_in_dim", 512)
+    head_dim = sum(cfg.model.get("axes_dim", [16, 24, 24]))
+    
+    dummy_img = torch.randn(batch_size, seq_len_img, in_channels, device=device, dtype=dtype)
+    dummy_img_ids = torch.zeros(batch_size, seq_len_img, 3, device=device, dtype=dtype)
+    dummy_txt = torch.randn(batch_size, seq_len_txt, context_in_dim, device=device, dtype=dtype)
+    dummy_txt_ids = torch.zeros(batch_size, seq_len_txt, 3, device=device, dtype=dtype)
+    dummy_timesteps = torch.rand(batch_size, device=device, dtype=dtype)
+    dummy_y_vec = torch.randn(batch_size, vec_in_dim, device=device, dtype=dtype)
+    dummy_guidance = torch.ones(batch_size, device=device, dtype=dtype) * 4.0
+    
+    with open(model_info_path, "w", encoding="utf-8") as f:
+        # 打印主模型 (Diffusion Model)
+        f.write("=" * 100 + "\n")
+        f.write("DIFFUSION MODEL (MMDiT)\n")
+        f.write("=" * 100 + "\n")
+        model_summary = summary(
+            model,
+            input_data={
+                "img": dummy_img,
+                "img_ids": dummy_img_ids,
+                "txt": dummy_txt,
+                "txt_ids": dummy_txt_ids,
+                "timesteps": dummy_timesteps,
+                "y_vec": dummy_y_vec,
+                "guidance": dummy_guidance,
+            },
+            depth=5,
+            verbose=0,
+            col_names=["input_size", "output_size", "num_params"],
+            row_settings=["var_names"],
+        )
+        f.write(str(model_summary) + "\n\n")
+        
+        # 打印 VAE 模型 (只有 encoder，decoder 已被删除以节省显存)
+        if not cfg.get("cached_video", False):
+            f.write("=" * 100 + "\n")
+            f.write("VAE MODEL (AutoencoderKL - Encoder Only)\n")
+            f.write("=" * 100 + "\n")
+            f.write(repr(model_ae) + "\n")
+            vae_total = sum(p.numel() for p in model_ae.parameters())
+            f.write(f"\nTotal Parameters: {vae_total:,} ({vae_total / 1e6:.2f} M)\n\n")
+            
+            # 打印 encoder 的详细参数
+            f.write("VAE Encoder Layer Details:\n")
+            for name, param in model_ae.named_parameters():
+                f.write(f"  {name}: shape={list(param.shape)}, numel={param.numel():,}\n")
+            f.write("\n")
+        
+        # 打印 T5 模型
+        if not cfg.get("cached_text", False):
+            f.write("=" * 100 + "\n")
+            f.write("T5 TEXT ENCODER\n")
+            f.write("=" * 100 + "\n")
+            f.write(repr(model_t5) + "\n")
+            t5_total = sum(p.numel() for p in model_t5.parameters())
+            f.write(f"\nTotal Parameters: {t5_total:,} ({t5_total / 1e6:.2f} M)\n\n")
+            
+            # 打印 CLIP 模型
+            f.write("=" * 100 + "\n")
+            f.write("CLIP TEXT ENCODER\n")
+            f.write("=" * 100 + "\n")
+            f.write(repr(model_clip) + "\n")
+            clip_total = sum(p.numel() for p in model_clip.parameters())
+            f.write(f"\nTotal Parameters: {clip_total:,} ({clip_total / 1e6:.2f} M)\n\n")
+        
+        # 打印每一层的参数详情
+        f.write("=" * 100 + "\n")
+        f.write("LAYER-WISE PARAMETER DETAILS (Diffusion Model)\n")
+        f.write("=" * 100 + "\n")
+        for name, param in model.named_parameters():
+            f.write(f"{name}: shape={list(param.shape)}, numel={param.numel():,}, trainable={param.requires_grad}\n")
+    
+    # 清理
+    del dummy_img, dummy_img_ids, dummy_txt, dummy_txt_ids, dummy_timesteps, dummy_y_vec, dummy_guidance
+    torch.cuda.empty_cache()
+    
+    logger.info(f"Model structure saved to {model_info_path}")
+
     # == setup optimizer ==
     optimizer = create_optimizer(model, cfg.optim)
 

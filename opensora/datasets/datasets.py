@@ -313,3 +313,84 @@ class CachedVideoTextDataset(VideoTextDataset):
 
     def __getitem__(self, index):
         return self.getitem(index)
+
+
+@DATASETS.register_module("dummy")
+class DummyDataset(VideoTextDataset):
+    """
+    用于测试训练流程的假数据集，不需要真实数据。
+    生成随机的视频张量和文本。
+    继承 VideoTextDataset 以兼容 dataloader 类型检查。
+    """
+
+    def __init__(
+        self,
+        num_samples: int = 100,
+        num_frames: int = 17,
+        height: int = 256,
+        width: int = 256,
+        channels: int = 3,
+        **kwargs,
+    ):
+        # 不调用父类 __init__，因为我们不需要真实数据文件
+        # 但需要设置一些必要的属性
+        self.num_samples = num_samples
+        self.num_frames = num_frames
+        self.height = height
+        self.width = width
+        self.channels = channels
+        self.transform_name = None
+        self.bucket_class = "Bucket"
+        self.rand_sample_interval = None
+        self.fps_max = 24  # 添加 fps_max 属性
+        self.prompts = [
+            "A beautiful sunset over the ocean.",
+            "A cat playing with a ball of yarn.",
+            "A futuristic city with flying cars.",
+            "A serene forest with a flowing river.",
+            "An astronaut floating in space.",
+        ]
+        
+        # 创建一个假的 DataFrame 来模拟真实数据集的 data 属性
+        # sampler 需要用到这个属性来分桶
+        self.data = pd.DataFrame({
+            "path": [f"dummy_video_{i}.mp4" for i in range(num_samples)],
+            "text": [self.prompts[i % len(self.prompts)] for i in range(num_samples)],
+            "num_frames": [num_frames] * num_samples,
+            "height": [height] * num_samples,
+            "width": [width] * num_samples,
+            "fps": [24] * num_samples,
+        })
+
+    def to_efficient(self):
+        # 假数据集不需要这个方法，但需要实现以兼容训练代码
+        pass
+
+    def __len__(self):
+        return self.num_samples
+
+    def __getitem__(self, index):
+        # 解析 bucket sampler 传入的格式 "index-num_frames-height-width"
+        if isinstance(index, str) and "-" in index:
+            parts = index.split("-")
+            idx = int(parts[0])
+            num_frames = int(parts[1])
+            height = int(parts[2])
+            width = int(parts[3])
+        else:
+            idx = int(index) if isinstance(index, str) else index
+            num_frames = self.num_frames
+            height = self.height
+            width = self.width
+
+        # 生成随机视频张量 (C, T, H, W)
+        # 注意：channels 应为 3（RGB），VAE 会将其编码为 latent
+        video = torch.randn(3, num_frames, height, width)
+
+        # 随机选择一个 prompt
+        text = self.prompts[idx % len(self.prompts)]
+
+        return {
+            "video": video,
+            "text": text,
+        }
