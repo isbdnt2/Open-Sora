@@ -1,0 +1,1 @@
+python -m sprite train --image-dir dataset/MNIST/webdataset --resume ./checkpoints/final.pt --epochs 2

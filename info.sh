@@ -1,0 +1,1 @@
+python -m sprite info --output ./docs/model_structure.txt --depth 10

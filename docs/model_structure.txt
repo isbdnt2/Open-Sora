@@ -1,0 +1,137 @@
+================================================================================
+Sprite Image LLM - Model Structure
+================================================================================
+
+Configuration:
+  Image Size: 32x32
+  Patch Size: 2x2
+  Vocab Size: 627
+  Max Sequence Length: 258
+  d_model (Hidden Size): 256
+  n_layers: 6
+  n_heads: 8
+  d_ff (FFN Hidden Size): 1024
+
+================================================================================
+
+===================================================================================================================
+Layer (type (var_name))                                 Input Shape          Output Shape         Param #
+===================================================================================================================
+SpriteModel (SpriteModel)                               --                   --                   --
+├─Embedding (token_embedding)                           [1, 257]             [1, 257, 256]        160,512
+├─ModuleList (layers)                                   --                   --                   --
+│    └─TransformerBlock (0)
+│    │    └─RMSNorm (attention_norm)                    [1, 257, 256]        [1, 257, 256]        256
+│    │    └─CausalSelfAttention (attention)
+│    │    │    └─Linear (q_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Linear (k_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Linear (v_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─RotaryEmbedding2D (rotary_emb)
+│    │    │    └─RotaryEmbedding2D (rotary_emb)
+│    │    │    └─Dropout (attn_dropout)
+│    │    │    └─Linear (o_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Dropout (resid_dropout)
+│    │    └─RMSNorm (ffn_norm)                          [1, 257, 256]        [1, 257, 256]        256
+│    │    └─FeedForward (feed_forward)
+│    │    │    └─Linear (w1)                            [1, 257, 256]        [1, 257, 1024]       262,144
+│    │    │    └─Linear (w3)                            [1, 257, 256]        [1, 257, 1024]       262,144
+│    │    │    └─Linear (w2)                            [1, 257, 1024]       [1, 257, 256]        262,144
+│    │    │    └─Dropout (dropout)
+│    └─TransformerBlock (1)
+│    │    └─RMSNorm (attention_norm)                    [1, 257, 256]        [1, 257, 256]        256
+│    │    └─CausalSelfAttention (attention)
+│    │    │    └─Linear (q_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Linear (k_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Linear (v_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─RotaryEmbedding2D (rotary_emb)
+│    │    │    └─RotaryEmbedding2D (rotary_emb)
+│    │    │    └─Dropout (attn_dropout)
+│    │    │    └─Linear (o_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Dropout (resid_dropout)
+│    │    └─RMSNorm (ffn_norm)                          [1, 257, 256]        [1, 257, 256]        256
+│    │    └─FeedForward (feed_forward)
+│    │    │    └─Linear (w1)                            [1, 257, 256]        [1, 257, 1024]       262,144
+│    │    │    └─Linear (w3)                            [1, 257, 256]        [1, 257, 1024]       262,144
+│    │    │    └─Linear (w2)                            [1, 257, 1024]       [1, 257, 256]        262,144
+│    │    │    └─Dropout (dropout)
+│    └─TransformerBlock (2)
+│    │    └─RMSNorm (attention_norm)                    [1, 257, 256]        [1, 257, 256]        256
+│    │    └─CausalSelfAttention (attention)
+│    │    │    └─Linear (q_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Linear (k_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Linear (v_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─RotaryEmbedding2D (rotary_emb)
+│    │    │    └─RotaryEmbedding2D (rotary_emb)
+│    │    │    └─Dropout (attn_dropout)
+│    │    │    └─Linear (o_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Dropout (resid_dropout)
+│    │    └─RMSNorm (ffn_norm)                          [1, 257, 256]        [1, 257, 256]        256
+│    │    └─FeedForward (feed_forward)
+│    │    │    └─Linear (w1)                            [1, 257, 256]        [1, 257, 1024]       262,144
+│    │    │    └─Linear (w3)                            [1, 257, 256]        [1, 257, 1024]       262,144
+│    │    │    └─Linear (w2)                            [1, 257, 1024]       [1, 257, 256]        262,144
+│    │    │    └─Dropout (dropout)
+│    └─TransformerBlock (3)
+│    │    └─RMSNorm (attention_norm)                    [1, 257, 256]        [1, 257, 256]        256
+│    │    └─CausalSelfAttention (attention)
+│    │    │    └─Linear (q_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Linear (k_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Linear (v_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─RotaryEmbedding2D (rotary_emb)
+│    │    │    └─RotaryEmbedding2D (rotary_emb)
+│    │    │    └─Dropout (attn_dropout)
+│    │    │    └─Linear (o_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Dropout (resid_dropout)
+│    │    └─RMSNorm (ffn_norm)                          [1, 257, 256]        [1, 257, 256]        256
+│    │    └─FeedForward (feed_forward)
+│    │    │    └─Linear (w1)                            [1, 257, 256]        [1, 257, 1024]       262,144
+│    │    │    └─Linear (w3)                            [1, 257, 256]        [1, 257, 1024]       262,144
+│    │    │    └─Linear (w2)                            [1, 257, 1024]       [1, 257, 256]        262,144
+│    │    │    └─Dropout (dropout)
+│    └─TransformerBlock (4)
+│    │    └─RMSNorm (attention_norm)                    [1, 257, 256]        [1, 257, 256]        256
+│    │    └─CausalSelfAttention (attention)
+│    │    │    └─Linear (q_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Linear (k_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Linear (v_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─RotaryEmbedding2D (rotary_emb)
+│    │    │    └─RotaryEmbedding2D (rotary_emb)
+│    │    │    └─Dropout (attn_dropout)
+│    │    │    └─Linear (o_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Dropout (resid_dropout)
+│    │    └─RMSNorm (ffn_norm)                          [1, 257, 256]        [1, 257, 256]        256
+│    │    └─FeedForward (feed_forward)
+│    │    │    └─Linear (w1)                            [1, 257, 256]        [1, 257, 1024]       262,144
+│    │    │    └─Linear (w3)                            [1, 257, 256]        [1, 257, 1024]       262,144
+│    │    │    └─Linear (w2)                            [1, 257, 1024]       [1, 257, 256]        262,144
+│    │    │    └─Dropout (dropout)
+│    └─TransformerBlock (5)
+│    │    └─RMSNorm (attention_norm)                    [1, 257, 256]        [1, 257, 256]        256
+│    │    └─CausalSelfAttention (attention)
+│    │    │    └─Linear (q_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Linear (k_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Linear (v_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─RotaryEmbedding2D (rotary_emb)
+│    │    │    └─RotaryEmbedding2D (rotary_emb)
+│    │    │    └─Dropout (attn_dropout)
+│    │    │    └─Linear (o_proj)                        [1, 257, 256]        [1, 257, 256]        65,536
+│    │    │    └─Dropout (resid_dropout)
+│    │    └─RMSNorm (ffn_norm)                          [1, 257, 256]        [1, 257, 256]        256
+│    │    └─FeedForward (feed_forward)
+│    │    │    └─Linear (w1)                            [1, 257, 256]        [1, 257, 1024]       262,144
+│    │    │    └─Linear (w3)                            [1, 257, 256]        [1, 257, 1024]       262,144
+│    │    │    └─Linear (w2)                            [1, 257, 1024]       [1, 257, 256]        262,144
+│    │    │    └─Dropout (dropout)
+├─RMSNorm (norm)                                        [1, 257, 256]        [1, 257, 256]        256
+├─Linear (lm_head)                                      [1, 257, 256]        [1, 257, 627]        160,512
+===================================================================================================================
+Total params: 6,615,808
+Trainable params: 6,615,808
+Non-trainable params: 0
+Total mult-adds (M): 6.62
+===================================================================================================================
+Input size (MB): 0.01
+Forward/backward pass size (MB): 49.71
+Params size (MB): 26.46
+Estimated Total Size (MB): 76.18
+===================================================================================================================
